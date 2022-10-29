@@ -1,6 +1,6 @@
 // /stories/pages/home.stories.jsx
-
-import NavigateBar from "./NavigateBar";
+import React from "react";
+import NavigateBar from "../pages/components/layouts/NavigateBar";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
