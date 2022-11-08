@@ -1,9 +1,8 @@
+/* eslint-disable no-undef */
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-const prisma = new PrismaClient();
+import prisma from "../../../lib/prisma/prisma";
 
 export default NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -20,6 +19,16 @@ export default NextAuth({
         return Promise.resolve("/error");
       }
       return true;
+    },
+    session: async ({ session, token }) => {
+      try {
+        const user = await prisma.User.findFirst(session.email);
+        const about = await prisma.UserData.findFirst(session.email);
+        session = { ...session, user, about };
+        return session;
+      } catch (error) {
+        return Promise.resolve("error");
+      }
     },
     redirect: async (url, _baseUrl) => {
       if (url === "/login") {

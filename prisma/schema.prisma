@@ -46,10 +46,14 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
+  about         String? 
   role Role @default(MAHASISWA)
   accounts      Account[]
   sessions      Session[]
   vacanys Vacany[]
+  data UserData[]
+  dataregistration DataRegistration[]
+
 
   @@map("users")
 }
@@ -73,9 +77,32 @@ model Vacany {
   id String @id @default(cuid())
   name String? 
   description String? 
-  image String?
-  landscapeImage String?
+  requirements String?
+  expires DateTime @default("2020-03-19T14:21:00+02:00")
+  create_at DateTime @default(now())
   AuthorOrganization User @relation(fields: [AuthorOrganizationEmail],references: [email] ,onDelete: Cascade)
   AuthorOrganizationEmail String
+  listVacany DataRegistration[]
   @@map("vacanys")
+}
+
+model UserData{
+  id String @id @default(cuid())
+  about String? 
+  contact String? 
+  experince String?
+  emailuser User @relation(fields : [email],references : [email], onDelete: Cascade)
+  email String @unique
+}
+
+model DataRegistration {
+  id String @id @default(cuid())
+  motlet String 
+  cvkreatif String?
+  ktm String 
+  create_at DateTime @default(now())
+  vacany Vacany @relation(fields: [vacanyId], references: [id] ,onDelete: Cascade)
+  vacanyId String
+  email User @relation(fields: [emailUser], references: [email] ,onDelete: Cascade)
+  emailUser String
 }

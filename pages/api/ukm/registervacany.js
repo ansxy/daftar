@@ -1,29 +1,46 @@
-const { PrismaClient } = require("@prisma/client");
+import multer from "multer";
+import prisma from "../../../lib/prisma/prisma";
+const path = require("path");
 
-const prisma = new PrismaClient();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(process.cwd(), "assets/ktp"));
+  },
+  filename: (req, file, cb) => {
+    const { name } = req.body;
+    cb(null, `${name}.jpg`);
+  },
+});
+
 export default async function handler(req, res) {
-  const { vacanyName, descVacany, reqVacany, companyId } = req.body;
-  try {
-    const user = await prisma.User.findFirst({
-      where: {
-        id: companyId,
-      },
-    });
-    if (user.Status == "Company") {
+  const ktpImgStorage = multer({ storage });
+  ktpImgStorage.single("image");
+
+  if (req.method === "GET") {
+    try {
+      const vacany = await prisma.vacany.findMany();
+
+      return res.status(200).json({ vacany });
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  if (req.method === "POST") {
+    const { name, description, requirements, email, expires } = req.body;
+    try {
       const Vacany = await prisma.Vacany.create({
         data: {
-          VacanyName: vacanyName,
-          DescVacany: descVacany,
-          ReqVacany: reqVacany,
-          companyId: user.id,
+          name: name,
+          description: description,
+          AuthorOrganizationEmail: email,
+          requirements: requirements,
+          expires: expires,
         },
       });
-      return res.status(201).json({ vacanId: Vacany.id });
-    } else {
-      console.log("User is not Company");
+      return res.status(201).json({ Vacany: Vacany });
+    } catch (err) {
+      console.log(err);
+      return res.status(500);
     }
-  } catch (err) {
-    console.log(err);
-    return res.status(500);
   }
 }
